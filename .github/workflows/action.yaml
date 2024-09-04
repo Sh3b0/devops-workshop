@@ -1,0 +1,36 @@
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - ".github/workflows/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: 3.12
+
+      - name: Install requirements
+        run: cd app && pip install -r requirements.txt
+
+      - name: Run tests
+        run: cd app && pytest
+  
+  build-and-push:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and Push Docker Container
+        run: |
+          cd app
+          docker build -t sh3b0/demo .
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u sh3b0 --password-stdin
+          docker push sh3b0/demo

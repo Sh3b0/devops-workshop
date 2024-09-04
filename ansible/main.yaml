@@ -1,0 +1,28 @@
+---
+
+- name: Install docker on the machine
+  hosts: demo
+  become: true
+  tasks:
+    # apt install docker.io
+    - name: Install Docker packages
+      ansible.builtin.apt:
+        name:
+          - docker.io
+        update_cache: true
+
+    # docker pull sh3b0/demo
+    - name: Pull the latest image
+      docker_image:
+        name: sh3b0/demo
+        tag: latest
+        source: pull
+
+    # docker run -it -p80:8080 sh3b0/demo
+    - name: Deploy the app container
+      docker_container:
+        name: app
+        image: sh3b0/demo
+        state: started
+        ports:
+          - "80:8080"
